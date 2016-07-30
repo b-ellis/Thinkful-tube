@@ -15,12 +15,27 @@ function getRequest(searchTerm){
 	}
 	url = "https://www.googleapis.com/youtube/v3/search";
 	$.get(url, params, function(data, items){
-		for(i=0; i < items.length; i++)
-		var myData = data.items[i];
-		$.each(myData, function(){
-			console.log(myData);
+		$.each(data.items, function(index, myData){
+			var ID = myData.id.videoId;
+			var isvideo = true;
+			if (!ID){
+				ID = myData.id.channelId;
+				isvideo = false;
+			}
+			var info = myData.snippet.title;
+			var thumb = myData.snippet.thumbnails.default.url;
+			var nextPage = data.nextPageToken
+			showResults(ID, info, thumb, isvideo);
+			console.log(data);
 		});
-		console.log(myData);
 	});
 }
-
+function showResults (ID, info, thumb, isvideo){
+	if (isvideo){
+		var url = "https://www.youtube.com/watch?v=" + ID;
+	} else {
+		var url = "https://www.youtube.com/channel/" + ID;
+	}
+	var html = "<li><h4>\"" + info + "\"</h4><a href=\"" + url + "\"><img src=\"" + thumb + "\"></img></a></li>";
+	$('#search-results').append(html);
+}
