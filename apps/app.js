@@ -2,19 +2,36 @@ $(function(){
 	$('#search-term').submit(function(event){
 		event.preventDefault();
 		var searchTerm = $('#query').val();
+		globalSearchTerm = null;
+		nextPageToken = null;
 		getRequest(searchTerm);
 	});
 });
 
-function getRequest(searchTerm){
+var globalSearchTerm;
+var nextPageToken;
+
+$('#next-page').click(function() {
+	if (globalSearchTerm && nextPageToken) {
+			getRequest(globalSearchTerm, nextPageToken);
+	}
+});
+
+function getRequest(searchTerm, pageToken){
+	$('#search-results').html("");
+	globalSearchTerm = searchTerm;
 	var params = {
 		part: 'snippet',
 		key: 'AIzaSyAzWbfHgmKTmYLdscc3FyhEDTYzHymkkJ0',
 		q: searchTerm,
-		maxResults: 10
+		maxResults: 10,
+	}
+	if (pageToken) {
+		params.pageToken = pageToken;
 	}
 	url = "https://www.googleapis.com/youtube/v3/search";
 	$.get(url, params, function(data, items){
+		nextPageToken = data.nextPageToken
 		$.each(data.items, function(index, myData){
 			var ID = myData.id.videoId;
 			var isvideo = true;
@@ -24,12 +41,11 @@ function getRequest(searchTerm){
 			}
 			var info = myData.snippet.title;
 			var thumb = myData.snippet.thumbnails.default.url;
-			var nextPage = data.nextPageToken
 			showResults(ID, info, thumb, isvideo);
-			console.log(data);
 		});
 	});
 }
+
 function showResults (ID, info, thumb, isvideo){
 	if (isvideo){
 		var url = "https://www.youtube.com/watch?v=" + ID;
